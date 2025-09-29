@@ -1,0 +1,12 @@
+{
+	"$schema": "https://phpbench.github.io/schema/config.json",
+	"runner.bootstrap": "./_bootstrap.php",
+	"runner.path": "./",
+	"runner.warmup": 5,
+	"runner.iterations": 50,
+	"runner.revs": 1,
+	"runner.time_unit": "milliseconds",
+	"console.error_stream": "php://stdout",
+	"console.output_stream": "php://stdout",
+	"runner.progress": "verbose"
+}
