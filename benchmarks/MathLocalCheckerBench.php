@@ -154,10 +154,16 @@ final class MathLocalCheckerBench {
 		}
 	}
 
+	public function clearCache(): void {
+		$checker = $this->factory->newLocalChecker("", 'tex', purge: true);
+		$checker->purge();
+	}
+
 	// ---------------- Subjects ----------------
 
 	/** MISS: purge before each call (recompute + fill). */
-	public function benchAllMiss(): void {
+	#[BeforeMethods( [ 'clearCache' ] )]
+	public function bbenchAllMiss(): void {
 		foreach ( $this->cases as $i => $c ) {
 			$out = $this->factory
 				->newLocalChecker( $c['input'], 'tex', purge: true )
@@ -169,18 +175,17 @@ final class MathLocalCheckerBench {
 
 	/** HIT: warm in same process (not timed), then run once reading from cache. */
 	#[BeforeMethods( [ 'warmAll' ] )]
-	public function benchAllHit(): void {
+	public function bbenchAllHit(): void {
 		foreach ( $this->cases as $i => $c ) {
 			$out = $this->factory
 				->newLocalChecker( $c['input'], 'tex', purge: false )
 				->getPresentationMathMLFragment();
-
 			assert( $this->equalXmlInner( (string)$out, $this->expectedDom[$i] ) );
 		}
 	}
 
 	// The following tests don't compare the output
-
+	#[BeforeMethods( [ 'clearCache' ] )]
 	public function benchAllMissCore(): void {
 		foreach ( $this->cases as $c ) {
 			$this->factory->newLocalChecker( $c['input'], 'tex', true )

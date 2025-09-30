@@ -8,5 +8,9 @@
 	"runner.time_unit": "milliseconds",
 	"console.error_stream": "php://stdout",
 	"console.output_stream": "php://stdout",
-	"runner.progress": "verbose"
+	"runner.progress": "verbose",
+	"runner.php_config": {
+		"zend.assertions": "1",
+		"assert.exception": "1"
+	}
 }

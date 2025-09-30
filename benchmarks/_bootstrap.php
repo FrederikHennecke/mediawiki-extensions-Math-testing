@@ -30,7 +30,12 @@ define( 'MW_CONFIG_CALLBACK', static function () {
 	require MW_INSTALL_PATH . '/LocalSettings.php';
 
 	if ( getenv( 'MATH_BENCH_WAN' ) === 'memcached' ) {
-		$GLOBALS['wgMemCachedServers'] = $GLOBALS['wgMemCachedServers'] ?? [ '127.0.0.1:11211' ];
+		$GLOBALS['wgMainCacheType'] = CACHE_MEMCACHED;
+		$GLOBALS['wgParserCacheType'] = CACHE_MEMCACHED;
+		$GLOBALS['wgMessageCacheType'] = CACHE_MEMCACHED;
+		$GLOBALS['wgSessionsInObjectCache'] = true;
+		$GLOBALS['wgSessionCacheType'] = CACHE_MEMCACHED;
+		$GLOBALS['wgMemCachedServers'] = [ '127.0.0.1:11211' ];
 		$GLOBALS['wgWANObjectCaches']['bench-memc'] = [
 			'class'   => \Wikimedia\ObjectCache\WANObjectCache::class,
 			'cacheId' => CACHE_MEMCACHED,

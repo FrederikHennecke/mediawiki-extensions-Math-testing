@@ -11,6 +11,7 @@ use MediaWiki\Message\Message;
 use Wikimedia\ObjectCache\WANObjectCache;
 
 class LocalChecker extends BaseChecker {
+	private bool $wasCacheHit = false;
 
 	public const VERSION = 1;
 	private const VALID_TYPES = [ 'tex', 'inline-tex', 'chem' ];
@@ -40,6 +41,10 @@ class LocalChecker extends BaseChecker {
 		return parent::getValidTex();
 	}
 
+	public function purge() {
+		$this->cache->clearProcessCache();
+	}
+
 	public function run() {
 		if ( $this->isChecked ) {
 			return;
@@ -54,12 +59,18 @@ class LocalChecker extends BaseChecker {
 			if ( $this->purge ) {
 				$this->cache->delete( $cacheInputKey, WANObjectCache::TTL_INDEFINITE );
 			}
+			$didRegen = false;
+			$callback = function ( ...$ignored ) use ( &$didRegen ) {
+				$didRegen = true;
+				return $this->runCheck();
+			};
 			$result = $this->cache->getWithSetCallback(
 				$cacheInputKey,
 				WANObjectCache::TTL_INDEFINITE,
-				[ $this, 'runCheck' ],
+				$callback,
 				[ 'version' => self::VERSION ],
 			);
+			$this->wasCacheHit = !$didRegen;
 		} catch ( Exception ) { // @codeCoverageIgnoreStart
 			// This is impossible since errors are thrown only if the option debug would be set.
 			$this->error = Message::newFromKey( 'math_failure' );
@@ -89,6 +100,9 @@ class LocalChecker extends BaseChecker {
 
 	public function getPresentationMathMLFragment(): ?string {
 		$this->run();
+		if ( $this->wasCacheHit ) {
+			return $this->mathMl . '<mtext>test</mtext>';
+		}
 		return $this->mathMl;
 	}
 

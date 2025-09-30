@@ -46,8 +46,6 @@ You’ll see four subjects:
 ## Results
 Results for memcached:
 ```
-benchAllMiss............................I49 - Mo153.159ms (±1.27%)
-benchAllHit.............................I49 - Mo148.208ms (±1.41%)
-benchAllMissCore........................I49 - Mo152.840ms (±1.30%)
-benchAllHitCore.........................I49 - Mo148.083ms (±2.42%)
+benchAllMissCore........................I49 - Mo195.291ms (±2.60%)
+benchAllHitCore.........................I49 - Mo18.568ms (±4.47%)
 ```
