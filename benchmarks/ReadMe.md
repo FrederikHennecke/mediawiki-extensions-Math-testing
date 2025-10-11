@@ -49,3 +49,8 @@ Results for memcached:
 benchAllMissCore........................I49 - Mo195.291ms (±2.60%)
 benchAllHitCore.........................I49 - Mo18.568ms (±4.47%)
 ```
+
+## Plot for inpuit length
+Simply execute `plot.py` to see plot for runtime vs input length.
+
+![Plot of runtime against Tex length (chars)](runtimeVSinputLength.png)

@@ -43,7 +43,7 @@ final class MathLocalCheckerBench {
 	#[Revs( 1 )]
 	#[Iterations(1)]
 	// This will throw an error but it is not faulty. Just prints some information about the current caching method.
-	public function benchDescribeWan(): void {
+	public function bbenchDescribeWan(): void {
 		$services = MediaWikiServices::getInstance();
 		$config = $services->getMainConfig();
 
@@ -199,5 +199,47 @@ final class MathLocalCheckerBench {
 			$this->factory->newLocalChecker( $c['input'], 'tex', false )
 				->getPresentationMathMLFragment();
 		}
+	}
+
+	/** Measure one call and return runtime in milliseconds. */
+	private function measureOne(string $tex, bool $purge): float {
+		$t0 = hrtime(true);
+		$this->factory->newLocalChecker($tex, 'tex', $purge)
+			->getPresentationMathMLFragment();
+		return (hrtime(true) - $t0) / 1e6;
+	}
+
+	/**
+	 * Produce per-case runtimes and lengths into a CSV for plotting.
+	 * One row per TeX input: index,len_bytes,len_chars,miss_ms,hit_ms,preview
+	 */
+	#[Revs(1)]
+	#[Iterations(1)]
+	public function benchProfileByLength(): void {
+		$outPath = getenv('MATH_BENCH_OUT') ?: '/tmp/math_localchecker_profile.csv';
+		$fh = @fopen($outPath, 'w');
+		if (!$fh) {
+			// Avoid stdout in PhpBench; just bail if we cannot write.
+			return;
+		}
+		fputcsv($fh, ['index','len_bytes','len_chars','miss_ms','hit_ms','preview'], escape: '\\');
+
+		foreach ($this->cases as $i => $c) {
+			$tex = $c['input'];
+
+			// Per-case MISS then direct HIT
+			$missMs = $this->measureOne($tex, purge: true);
+			$hitMs  = $this->measureOne($tex, purge: false);
+
+			$lenBytes = strlen($tex);
+			$lenChars = function_exists('mb_strlen') ? mb_strlen($tex, 'UTF-8') : $lenBytes;
+
+			// Short preview to help eyeball outliers in the plot / csv
+			$preview = $lenChars > 40 ? (function_exists('mb_substr') ? mb_substr($tex, 0, 40, 'UTF-8') : substr($tex, 0, 40)) . '…' : $tex;
+
+			fputcsv($fh, [ $i, $lenBytes, $lenChars, round($missMs, 3), round($hitMs, 3), $preview ], escape: '\\');
+		}
+
+		fclose($fh);
 	}
 }
